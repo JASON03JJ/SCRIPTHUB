@@ -85,14 +85,17 @@ end)
 local minimized = false
 minimize.MouseButton1Click:Connect(function()
     if not minimized then
+        -- nur die Topbar sichtbar lassen
+        content.Visible = false
+        button.Visible = false
         TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {Size = UDim2.new(0, 400, 0, 30)}):Play()
-        button.Visible = false
         minimized = true
     else
+        content.Visible = true
+        button.Visible = true
         TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {Size = UDim2.new(0, 400, 0, 250)}):Play()
-        button.Visible = true
         minimized = false
     end
 end)
