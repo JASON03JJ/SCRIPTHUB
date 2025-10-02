@@ -1,4 +1,4 @@
--- ScriptGuiHelper by Jason
+-- PVB SHOP BUYER by Jason
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -6,7 +6,7 @@ local CoreGui = game:GetService("CoreGui")
 
 -- ScreenGui
 local gui = Instance.new("ScreenGui")
-gui.Name = "ScriptGuiHelper"
+gui.Name = "PVBShopBuyer"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -34,14 +34,26 @@ topCorner.Parent = topbar
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 1, 0)
+title.Size = UDim2.new(1, -40, 1, 0)
 title.BackgroundTransparency = 1
-title.Text = "ScriptGuiHelper"
+title.Text = "PVB SHOP BUYER"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 16
 title.TextColor3 = Color3.fromRGB(200, 220, 255)
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = topbar
+
+-- Minimizer Button
+local minimize = Instance.new("TextButton")
+minimize.Size = UDim2.new(0, 30, 0, 30)
+minimize.Position = UDim2.new(1, -35, 0, 0)
+minimize.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
+minimize.Text = "_"
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 18
+minimize.TextColor3 = Color3.fromRGB(255,255,255)
+minimize.Parent = topbar
+Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 8)
 
 -- Content Frame
 local content = Instance.new("Frame")
@@ -52,20 +64,10 @@ content.BorderSizePixel = 0
 content.Parent = main
 Instance.new("UICorner", content).CornerRadius = UDim.new(0, 8)
 
--- Example Text
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1, 0, 0, 30)
-label.BackgroundTransparency = 1
-label.Text = "Welcome to ScriptGuiHelper"
-label.Font = Enum.Font.Gotham
-label.TextSize = 14
-label.TextColor3 = Color3.fromRGB(220, 220, 255)
-label.Parent = content
-
 -- Button "Buy Cactus Seed"
 local button = Instance.new("TextButton")
 button.Size = UDim2.new(0, 200, 0, 35)
-button.Position = UDim2.new(0.5, -100, 0, 80)
+button.Position = UDim2.new(0.5, -100, 0, 10)
 button.BackgroundColor3 = Color3.fromRGB(60, 100, 80)
 button.Text = "Buy Cactus Seed"
 button.Font = Enum.Font.GothamBold
@@ -77,6 +79,22 @@ Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
 button.MouseButton1Click:Connect(function()
     local args = {"Cactus Seed"}
     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
+end)
+
+-- Minimizer Logic
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+    if not minimized then
+        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.new(0, 400, 0, 30)}):Play()
+        button.Visible = false
+        minimized = true
+    else
+        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.new(0, 400, 0, 250)}):Play()
+        button.Visible = true
+        minimized = false
+    end
 end)
 
 -- Dragging
@@ -98,23 +116,5 @@ UserInputService.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta = input.Position - dragStart
 		main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-	end
-end)
-
--- Toggle with K
-local enabled = true
-UserInputService.InputBegan:Connect(function(input, processed)
-	if not processed and input.KeyCode == Enum.KeyCode.K then
-		enabled = not enabled
-		if enabled then
-			main.Visible = true
-			TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-				{Size = UDim2.new(0, 400, 0, 250)}):Play()
-		else
-			TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-				{Size = UDim2.new(0, 400, 0, 0)}):Play()
-			task.wait(0.3)
-			main.Visible = false
-		end
 	end
 end)
