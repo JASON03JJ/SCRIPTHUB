@@ -43,7 +43,7 @@ Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 12)
 
 -- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -100, 1, 0)
+title.Size = UDim2.new(1, -70, 1, 0)
 title.BackgroundTransparency = 1
 title.Text = "PVB SHOP BUYER"
 title.Font = Enum.Font.GothamBold
@@ -52,17 +52,21 @@ title.TextColor3 = Color3.fromRGB(200, 220, 255)
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = topbar
 
--- Minimizer Button
-local minimize = Instance.new("TextButton")
-minimize.Size = UDim2.new(0, 30, 0, 30)
-minimize.Position = UDim2.new(1, -35, 0, 0)
-minimize.BackgroundColor3 = Color3.fromRGB(80, 40, 40)
-minimize.Text = "_"
-minimize.Font = Enum.Font.GothamBold
-minimize.TextSize = 18
-minimize.TextColor3 = Color3.fromRGB(255,255,255)
-minimize.Parent = topbar
-Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 8)
+-- Close Button (X)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Parent = topbar
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
+
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
 
 -- Sidebar Frame (für Tabs)
 local sidebar = Instance.new("Frame")
@@ -170,24 +174,6 @@ end)
 
 -- Standardmäßig Seeds anzeigen
 createButtons(Seeds, "BuyItem")
-
--- Minimizer Logic
-local minimized = false
-minimize.MouseButton1Click:Connect(function()
-    if not minimized then
-        content.Visible = false
-        sidebar.Visible = false
-        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, 500, 0, 30)}):Play()
-        minimized = true
-    else
-        content.Visible = true
-        sidebar.Visible = true
-        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, 500, 0, 300)}):Play()
-        minimized = false
-    end
-end)
 
 -- Dragging
 local dragging, dragStart, startPos
