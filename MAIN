@@ -1,1 +1,312 @@
-print("Hello");
+--[[
+PVB SHOP BUYER + Autobuy + Equip Loop + Automatic Tab
+Author: Jason
+Version: 5.1 (Dark Gray + Show/Hide UI + Full HD Mitte)
+]]
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local Debris = game:GetService("Debris")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Seeds = {"Cactus Seed","Strawberry Seed","Pumpkin Seed","Sunflower Seed","Dragon Fruit Seed","Eggplant Seed","Watermelon Seed","Grape Seed","Cocotank Seed","Carnivorous Plant Seed","Mr Carrot Seed","Tomatrio Seed","Shroombino Seed"}
+local Gears = {"Water Bucket","Frost Grenade","Banana Gun","Frost Blower","Carrot Launcher"}
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "PVBShopBuyer"
+gui.ResetOnSpawn=false
+gui.IgnoreGuiInset=true
+gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.Parent = CoreGui
+
+-- Main Frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0,500,0,300)
+main.Position = UDim2.new(0.5,-250,1,100) -- startet unterhalb
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderSizePixel=0
+main.AnchorPoint=Vector2.new(0.5,0.5)
+main.Parent=gui
+Instance.new("UICorner",main).CornerRadius=UDim.new(0,12)
+
+-- Topbar
+local topbar = Instance.new("Frame")
+topbar.Size=UDim2.new(1,0,0,30)
+topbar.BackgroundColor3=Color3.fromRGB(40,40,40)
+topbar.BorderSizePixel=0
+topbar.Parent=main
+Instance.new("UICorner",topbar).CornerRadius=UDim.new(0,12)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size=UDim2.new(1,-10,1,0)
+title.BackgroundTransparency=1
+title.Text="PVB"
+title.Font=Enum.Font.GothamBold
+title.TextSize=16
+title.TextColor3=Color3.fromRGB(200,200,200)
+title.TextXAlignment=Enum.TextXAlignment.Left
+title.TextYAlignment=Enum.TextYAlignment.Center
+title.Position=UDim2.new(0,10,0,0)
+title.Parent=topbar
+
+-- Close Button (X)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0,30,0,30)
+closeBtn.Position = UDim2.new(1,-35,0,0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(150,40,40)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Parent = topbar
+Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(0,8)
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+-- Sidebar
+local sidebar = Instance.new("Frame")
+sidebar.Size=UDim2.new(0,120,1,-30)
+sidebar.Position=UDim2.new(0,0,0,30)
+sidebar.BackgroundColor3=Color3.fromRGB(30,30,30)
+sidebar.BorderSizePixel=0
+sidebar.Parent=main
+Instance.new("UICorner",sidebar).CornerRadius=UDim.new(0,8)
+
+local function createSidebarButton(text,posY)
+	local btn = Instance.new("TextButton")
+	btn.Size=UDim2.new(1,-10,0,30)
+	btn.Position=UDim2.new(0,5,0,posY)
+	btn.Text=text
+	btn.Font=Enum.Font.GothamBold
+	btn.TextSize=14
+	btn.TextColor3=Color3.fromRGB(230,230,230)
+	btn.BackgroundColor3=Color3.fromRGB(50,50,50)
+	btn.Parent=sidebar
+	Instance.new("UICorner",btn).CornerRadius=UDim.new(0,6)
+	return btn
+end
+
+local seedTabBtn = createSidebarButton("Seeds",5)
+local gearTabBtn = createSidebarButton("Gear",40)
+local extraTabBtn = createSidebarButton("Extras",75)
+local autobuyTabBtn = createSidebarButton("Autobuy",110)
+local automaticTabBtn = createSidebarButton("Automatic",145)
+
+-- Content
+local content = Instance.new("Frame")
+content.Size=UDim2.new(1,-130,1,-30)
+content.Position=UDim2.new(0,130,0,30)
+content.BackgroundColor3=Color3.fromRGB(25,25,25)
+content.BorderSizePixel=0
+content.Parent=main
+Instance.new("UICorner",content).CornerRadius=UDim.new(0,8)
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size=UDim2.new(1,0,1,0)
+scroll.BackgroundTransparency=1
+scroll.ScrollBarThickness=6
+scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y
+scroll.Parent=content
+
+local layout = Instance.new("UIListLayout")
+layout.Parent=scroll
+layout.SortOrder=Enum.SortOrder.LayoutOrder
+layout.Padding=UDim.new(0,5)
+
+-- Rate-limit
+local lastClickTime=0
+local cooldown=0.5
+local function safeFire(remoteName,itemName)
+	local now=tick()
+	if now-lastClickTime<cooldown then return end
+	lastClickTime=now
+	local remote=ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild(remoteName)
+	if remote then remote:FireServer(itemName) end
+end
+
+-- Buttons
+local function createButtons(list,remoteName)
+	scroll:ClearAllChildren()
+	for i,itemName in ipairs(list) do
+		local btn = Instance.new("TextButton")
+		btn.Size=UDim2.new(1,-10,0,30)
+		btn.Position=UDim2.new(0,5,0,(i-1)*35+5)
+		btn.BackgroundColor3=Color3.fromRGB(50,50,50)
+		btn.Text=itemName
+		btn.Font=Enum.Font.GothamBold
+		btn.TextSize=14
+		btn.TextColor3=Color3.fromRGB(230,230,230)
+		btn.Parent=scroll
+		Instance.new("UICorner",btn).CornerRadius=UDim.new(0,6)
+		btn.MouseButton1Click:Connect(function()
+			if remoteName then safeFire(remoteName,itemName) end
+		end)
+	end
+end
+
+-- Tabs
+seedTabBtn.MouseButton1Click:Connect(function() createButtons(Seeds,"BuyItem") end)
+gearTabBtn.MouseButton1Click:Connect(function() createButtons(Gears,"BuyGear") end)
+extraTabBtn.MouseButton1Click:Connect(function()
+	scroll:ClearAllChildren()
+	local btn=Instance.new("TextButton")
+	btn.Size=UDim2.new(1,-10,0,40)
+	btn.Position=UDim2.new(0,5,0,5)
+	btn.BackgroundColor3=Color3.fromRGB(50,50,50)
+	btn.Text="Equip Best + Collect Monny"
+	btn.Font=Enum.Font.GothamBold
+	btn.TextSize=14
+	btn.TextColor3=Color3.fromRGB(230,230,230)
+	btn.Parent=scroll
+	Instance.new("UICorner",btn).CornerRadius=UDim.new(0,6)
+	btn.MouseButton1Click:Connect(function() safeFire("EquipBestBrainrots","") end)
+end)
+
+-- Default
+createButtons(Seeds,"BuyItem")
+
+-- Saved selections
+local savedSeedsSelection={}
+local savedGearsSelection={}
+local autoBuyEnabled=false
+
+-- Autobuy Tab
+autobuyTabBtn.MouseButton1Click:Connect(function()
+	scroll:ClearAllChildren()
+	local autoBuyToggle = Instance.new("TextButton")
+	autoBuyToggle.Size = UDim2.new(0,120,0,30)
+	autoBuyToggle.Position = UDim2.new(0,5,0,5)
+	autoBuyToggle.Text = "AutoBuy: "..(autoBuyEnabled and "ON" or "OFF")
+	autoBuyToggle.Font = Enum.Font.GothamBold
+	autoBuyToggle.TextSize = 14
+	autoBuyToggle.TextColor3 = Color3.fromRGB(230,230,230)
+	autoBuyToggle.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	autoBuyToggle.Parent = scroll
+	Instance.new("UICorner",autoBuyToggle).CornerRadius=UDim.new(0,6)
+	autoBuyToggle.MouseButton1Click:Connect(function()
+		autoBuyEnabled = not autoBuyEnabled
+		autoBuyToggle.Text = "AutoBuy: "..(autoBuyEnabled and "ON" or "OFF")
+	end)
+
+	local function createDropdown(xPos, items, savedTable)
+		for i,item in ipairs(items) do
+			local btn = Instance.new("TextButton")
+			btn.Size=UDim2.new(0,150,0,25)
+			btn.Position=UDim2.new(0,xPos,0,50+(i-1)*30)
+			btn.Text=item
+			btn.BackgroundColor3=Color3.fromRGB(50,50,50)
+			btn.TextColor3=Color3.fromRGB(230,230,230)
+			btn.Font=Enum.Font.GothamBold
+			btn.TextSize=14
+			btn.Parent=scroll
+			Instance.new("UICorner",btn).CornerRadius=UDim.new(0,6)
+			btn.MouseButton1Click:Connect(function()
+				if savedTable[item] then
+					savedTable[item]=nil
+					btn.BackgroundColor3=Color3.fromRGB(50,50,50)
+				else
+					savedTable[item]=true
+					btn.BackgroundColor3=Color3.fromRGB(80,80,80)
+				end
+			end)
+		end
+	end
+	createDropdown(5,Seeds,savedSeedsSelection)
+	createDropdown(170,Gears,savedGearsSelection)
+end)
+
+-- Autobuy Loop
+spawn(function()
+	while true do
+		if autoBuyEnabled then
+			for item,_ in pairs(savedSeedsSelection) do safeFire("BuyItem",item) end
+			for item,_ in pairs(savedGearsSelection) do safeFire("BuyGear",item) end
+		end
+		task.wait(0.3)
+	end
+end)
+
+-- Automatic Tab
+local autoEquipEnabled=false
+local autoEquipDelay=5
+automaticTabBtn.MouseButton1Click:Connect(function()
+	scroll:ClearAllChildren()
+	local delayLabel=Instance.new("TextLabel")
+	delayLabel.Size=UDim2.new(0,120,0,30)
+	delayLabel.Position=UDim2.new(0,5,0,5)
+	delayLabel.Text="Delay (sec, min 5)"
+	delayLabel.Font=Enum.Font.GothamBold
+	delayLabel.TextSize=14
+	delayLabel.TextColor3=Color3.fromRGB(230,230,230)
+	delayLabel.BackgroundTransparency=1
+	delayLabel.TextXAlignment=Enum.TextXAlignment.Left
+	delayLabel.Parent=scroll
+
+	local delayBox=Instance.new("TextBox")
+	delayBox.Size=UDim2.new(0,80,0,30)
+	delayBox.Position=UDim2.new(0,130,0,5)
+	delayBox.Text=tostring(autoEquipDelay)
+	delayBox.ClearTextOnFocus=false
+	delayBox.Font=Enum.Font.Gotham
+	delayBox.TextSize=14
+	delayBox.TextColor3=Color3.fromRGB(0,0,0)
+	delayBox.BackgroundColor3=Color3.fromRGB(200,200,200)
+	delayBox.Parent=scroll
+	Instance.new("UICorner",delayBox).CornerRadius=UDim.new(0,6)
+
+	local toggleBtn=Instance.new("TextButton")
+	toggleBtn.Size=UDim2.new(0,150,0,30)
+	toggleBtn.Position=UDim2.new(0,5,0,50)
+	toggleBtn.Text="Equip Best Loop: "..(autoEquipEnabled and "ON" or "OFF")
+	toggleBtn.Font=Enum.Font.GothamBold
+	toggleBtn.TextSize=14
+	toggleBtn.TextColor3=Color3.fromRGB(230,230,230)
+	toggleBtn.BackgroundColor3=Color3.fromRGB(50,50,50)
+	toggleBtn.Parent=scroll
+	Instance.new("UICorner",toggleBtn).CornerRadius=UDim.new(0,6)
+
+	toggleBtn.MouseButton1Click:Connect(function()
+		autoEquipEnabled=not autoEquipEnabled
+		toggleBtn.Text="Equip Best Loop: "..(autoEquipEnabled and "ON" or "OFF")
+		if autoEquipEnabled then
+			spawn(function()
+				while autoEquipEnabled do
+					local delayVal=tonumber(delayBox.Text) or 5
+					if delayVal<5 then delayVal=5 end
+					autoEquipDelay=delayVal
+					safeFire("EquipBestBrainrots","")
+					task.wait(delayVal)
+				end
+			end)
+		end
+	end)
+end)
+
+-- Show/Hide UI Button
+local showBtn = Instance.new("TextButton")
+showBtn.Size=UDim2.new(0,120,0,30)
+showBtn.Position=UDim2.new(0.5,-60,0,40) -- etwas weiter unten
+showBtn.Text="Show UI"
+showBtn.Font=Enum.Font.GothamBold
+showBtn.TextSize=14
+showBtn.TextColor3=Color3.fromRGB(230,230,230)
+showBtn.BackgroundColor3=Color3.fromRGB(50,50,50)
+showBtn.Parent=gui
+Instance.new("UICorner",showBtn).CornerRadius=UDim.new(0,6)
+
+local visible=false
+showBtn.MouseButton1Click:Connect(function()
+	if not visible then
+		TweenService:Create(main,TweenInfo.new(0.5),{Position=UDim2.new(0.5,-250,0.5,-150)}):Play()
+		showBtn.Text="Hide UI"
+		visible=true
+	else
+		TweenService:Create(main,TweenInfo.new(0.5),{Position=UDim2.new(0.5,-250,1,100)}):Play()
+		showBtn:Destroy()
+		visible=false
+	end
+end)
