@@ -1679,7 +1679,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			while true do
 				task.wait(math.random(180, 600))
 				RayfieldLibrary:Notify({
-					Title = "Rayfield Interface",
+					Title = "😊",
 					Content = "",
 					Duration = 7,
 					Image = 4370033185,
@@ -3765,10 +3765,10 @@ if useStudio then
 
 	--local Window = RayfieldLibrary:CreateWindow({
 	--	Name = "Rayfield Example Window",
-	--	LoadingTitle = "Rayfield Interface Suite",
+	--	LoadingTitle = "😊",
 	--	Theme = 'Default',
 	--	Icon = 0,
-	--	LoadingSubtitle = "by Sirius",
+	--	LoadingSubtitle = "😊",
 	--	ConfigurationSaving = {
 	--		Enabled = true,
 	--		FolderName = nil, -- Create a custom folder for your hub/game
@@ -3833,7 +3833,7 @@ if useStudio then
 	--})
 
 
-	----RayfieldLibrary:Notify({Title = "Rayfield Interface", Content = "Welcome to Rayfield. These - are the brand new notification design for Rayfield, with custom sizing and Rayfield calculated wait times.", Image = 4483362458})
+	----RayfieldLibrary:Notify({Title = "Rayfield Interface", Content = "😊", Image = 4483362458})
 
 	--local Section = Tab:CreateSection("Section Example")
 
