@@ -1,5 +1,5 @@
 local scripts = {
-    [82321750197896] = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/JASON03JJ/SCRIPTHUB/main/Games/PooP%20A%20Brainroot"))()]],
+    [82321750197896] = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/JASON03JJ/SCRIPTHUB/refs/heads/Games/PooP%20A%20Brainroot"))()]],
     [11872917490] = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/JASON03JJ/SCRIPTHUB/refs/heads/Games/Fable%20Legecy"))()]],
     [14928194914] = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/JASON03JJ/SCRIPTHUB/refs/heads/Games/Fable%20Legecy"))()]],
 }
